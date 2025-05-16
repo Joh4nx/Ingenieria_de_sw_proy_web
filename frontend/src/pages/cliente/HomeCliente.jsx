@@ -9,16 +9,21 @@ import { FiClock, FiMapPin, FiPhone, FiStar, FiArrowRight } from 'react-icons/fi
 import Loader from '../../components/Loader';
 import ErrorMessage from '../../components/ErrorMessage';
 import LazyLoad from 'react-lazyload';
+import Footer from '../../components/Footer';
 
 // Importar estilos de react-slick
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
 function HomeCliente() {
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const [featuredDishes, setFeaturedDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const toggleMap = () => {
+    setIsMapOpen(!isMapOpen);
+  };
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
@@ -107,12 +112,12 @@ function HomeCliente() {
       <section
         className="hero-section animate"
         style={{
-          backgroundImage: `linear-gradient(rgba(25,28,38,0.9), rgba(25,28,38,0.7)), url(${backgroundImage})`
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.0), rgba(0,0,0,0.0)), url(${backgroundImage})`
         }}
       >
         <div className="hero-overlay">
           <h1 className="hero-title">
-            <span className="highlight">Bienvenido</span> a El Gusto de Don Justo
+            <span className="highlight">Bienvenido</span> <span className="don-justo">a El Gusto de Don Justo</span>
           </h1>
           <p className="hero-subtitle">Experiencias gastronómicas memorables</p>
           <div className="hero-actions">
@@ -213,10 +218,10 @@ function HomeCliente() {
       {/* Sección de Contacto */}
       <section className="contact-section animate">
         <div className="contact-info">
-          <div className="info-card">
+          <div className="info-card" onClick={toggleMap} style={{ cursor: 'pointer' }}>
             <FiMapPin className="info-icon" />
             <h3>Visítanos</h3>
-            <p>Av. Siempreviva 742</p>
+            <p>Av. 12 de Octubre esquina Guchala</p>
             <p>La Paz, Bolivia</p>
           </div>
           <div className="info-card">
@@ -233,12 +238,50 @@ function HomeCliente() {
           </div>
         </div>
       </section>
-
+      {isMapOpen && (
+        <div
+          className="map-modal-overlay"
+          onClick={toggleMap}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => { if(e.key === 'Escape') toggleMap(); }}
+        >
+          <div
+            className="map-modal-circle"
+            onClick={e => e.stopPropagation()} // evita cerrar el modal al hacer clic dentro del círculo
+          >
+            <iframe
+  width="600"
+  height="450"
+  style={{ border: 0 }}
+  loading="lazy"
+  allowfullscreen
+  referrerpolicy="no-referrer-when-downgrade"
+  src="https://www.google.com/maps?q=-16.508253,-68.128520&hl=es&z=18&output=embed">
+</iframe>
+          </div>
+        </div>
+      )}
+          <a
+            href="https://wa.me/59178833693" // reemplaza con el número real sin espacios ni símbolos
+            target="_blank"
+            rel="noopener noreferrer"
+            className="whatsapp-float"
+            title="Contáctanos por WhatsApp"
+          >
+            <img
+              src="https://img.icons8.com/color/48/000000/whatsapp--v1.png"
+              alt="WhatsApp"
+              className="whatsapp-icon"
+            />
+          </a>
+          
+          <Footer />
       <style>{`
         :root {
           --primary-color: #8B0000;
           --secondary-color: #D4AF37;
-          --accent-color: #3D2B1F;
+          --accent-color:#D4AF37;
           --light-bg: #FFF8F0;
           --dark-bg: #2A2A2A;
           --text-dark: #333;
@@ -255,7 +298,10 @@ function HomeCliente() {
           line-height: 1.6;
           color: var(--text-dark);
           background: var(--light-bg);
+          margin: 0;
+          padding: 0;
         }
+        
         
         .home-container {
           background-color: var(--light-bg);
@@ -292,14 +338,14 @@ function HomeCliente() {
           position: relative;
           z-index: 2;
           text-align: center;
-          padding: 4rem 2rem;
+          padding: 4rem 4.5rem;
         }
         .hero-title {
           font-family: 'Cinzel Decorative', cursive;
           font-size: 5rem;
           line-height: 1.1;
           margin-bottom: 2rem;
-          text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          text-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
           display: inline-block;
           position: relative;
         }
@@ -343,6 +389,33 @@ function HomeCliente() {
           align-items: center;
           gap: 0.8rem;
         }
+          .whatsapp-float {
+          position: fixed;
+          width: 60px;
+          height: 60px;
+          bottom: 20px;
+          right: 20px;
+          background-color: #25d366;
+          color: white;
+          border-radius: 50%;
+          text-align: center;
+          box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+          z-index: 999;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transition: background 0.3s ease;
+        }
+
+        .whatsapp-float:hover {
+          background-color: #128c7e;
+        }
+
+        .whatsapp-icon {
+          width: 35px;
+          height: 35px;
+        }
+
         .hero-button.primary {
           background: var(--secondary-color);
           color: var(--primary-color);
@@ -633,7 +706,7 @@ function HomeCliente() {
           display: inline-block;
           padding: 1.2rem 4rem;
           background: var(--secondary-color);
-          color: var(--accent-color);
+          color: #ffff;
           border-radius: 50px;
           text-decoration: none;
           font-weight: 600;
@@ -671,6 +744,10 @@ function HomeCliente() {
         .info-card:hover {
           transform: translateY(-5px);
         }
+          .don-justo {
+  color: #ffff; /* o cualquier color específico */
+  font-weight: bold;
+}
         .info-icon {
           font-size: 2.5rem;
           color: var(--primary-color);
@@ -686,6 +763,36 @@ function HomeCliente() {
           line-height: 1.8;
           font-family: 'Open Sans', sans-serif;
         }
+          .map-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro opaco */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.map-modal-circle {
+  width: 90vmin; /* círculo responsivo */
+  height: 90vmin;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+  position: relative;
+  background-color: #000; /* por si el iframe tarda */
+}
+
+.map-modal-circle iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  filter: grayscale(10%) contrast(1.2);
+}
+
         
         /* Animación de Entrada */
         @keyframes fadeIn {

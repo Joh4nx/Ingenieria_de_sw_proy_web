@@ -84,7 +84,7 @@ const NavbarCliente = () => {
       </div>
       <style>{`
         :root {
-          --navbar-bg: rgba(0, 0, 0, 0.95);
+          --navbar-bg: #8B0000;
           --text-color: #f8f9fa;
           --accent-color: #dc3545;
           --transition-speed: 0.3s;
