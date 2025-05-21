@@ -15,6 +15,11 @@ const AdminLayout = () => {
         </div>
       </div>
       <style>{`
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
         /* Container general */
         .admin-layout {
           display: flex;
@@ -24,19 +29,22 @@ const AdminLayout = () => {
         }
         /* Contenedor que agrupa sidebar y contenido */
         .admin-body {
+        
           display: flex;
           flex: 1;
-          margin-top: 80px; /* Espacio para el navbar fijo */
+          margin-top: 72px; /* Espacio para el navbar fijo */
         }
         /* Sidebar: puedes ajustar el ancho según necesites */
         .admin-body > .sidebar,
         .admin-body > aside {
+        
           width: 250px;
           background: #333;
           color: #fff;
         }
         /* Contenido principal */
         .admin-content {
+        
           flex: 1;
           padding: 2rem;
         }

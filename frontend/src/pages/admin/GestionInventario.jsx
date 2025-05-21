@@ -219,7 +219,7 @@ const styles = {
     marginBottom: '2rem',
     padding: '1rem 2rem',
     backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
+    borderRadius: '12px', // más redondeado
     boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
   },
   formGroup: {
@@ -233,18 +233,22 @@ const styles = {
   input: {
     width: '100%',
     padding: '0.5rem',
-    borderRadius: '4px',
+    borderRadius: '12px', // input redondeado
     border: '1px solid #ccc',
     fontSize: '1rem'
   },
   addButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#f44336', // rojo brillante
     color: '#fff',
     border: 'none',
     padding: '0.75rem 1.5rem',
-    borderRadius: '4px',
+    borderRadius: '12px', // redondeado
     fontSize: '1rem',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease',
+  },
+  addButtonHover: {
+    backgroundColor: '#d32f2f', // rojo más oscuro en hover
   },
   tableContainer: {
     overflowX: 'auto'
@@ -266,15 +270,31 @@ const styles = {
   quantityInput: {
     width: '80px',
     padding: '0.3rem',
-    fontSize: '1rem'
+    fontSize: '1rem',
+    borderRadius: '12px', // redondeado para inputs pequeños
+    border: '1px solid #ccc',
   },
   actionButton: {
-    backgroundColor: '#d32f2f',
+    backgroundColor: '#f44336', // rojo brillante
     color: '#fff',
     border: 'none',
     padding: '0.5rem 1rem',
-    borderRadius: '4px',
-    cursor: 'pointer'
+    borderRadius: '12px', // redondeado
+    cursor: 'pointer',
+    transition: 'background-color 0.3s ease',
+  },
+  actionButtonHover: {
+    backgroundColor: '#d32f2f', // rojo más oscuro en hover
+  },
+  error: {
+    color: '#f44336',
+    fontWeight: 'bold',
+    marginBottom: '1rem'
+  },
+  success: {
+    color: '#4caf50',
+    fontWeight: 'bold',
+    marginBottom: '1rem'
   }
 };
 

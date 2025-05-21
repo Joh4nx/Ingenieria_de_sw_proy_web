@@ -7,24 +7,19 @@ import { db } from '../services/firebase';
 
 const AdminSidebar = () => {
   const { user, updateUser } = useAuth();
-  console.log('User en AdminSidebar (antes de refrescar):', user);
 
-  // Efecto para refrescar el usuario desde Firebase (para obtener los accesos actualizados)
-  // Ejemplo simple de debounce en el useEffect (nota: este es un ejemplo básico)
-useEffect(() => {
+  useEffect(() => {
     let timer;
     if (user && user.id) {
       const userRef = ref(db, `usuarios/${user.id}`);
       const unsubscribe = onValue(userRef, (snapshot) => {
         const data = snapshot.val();
-        // Compara solo la propiedad "accesos"
         if (data && JSON.stringify(data.accesos) !== JSON.stringify(user.accesos)) {
           clearTimeout(timer);
           timer = setTimeout(() => {
             const updatedUser = { ...data, id: user.id };
             updateUser(updatedUser);
-            console.log('User actualizado desde Firebase:', updatedUser);
-          }, 500); // 500ms de debounce (ajústalo según tus necesidades)
+          }, 500);
         }
       });
       return () => {
@@ -33,12 +28,8 @@ useEffect(() => {
       };
     }
   }, [user, updateUser]);
-  
 
-  // Usar únicamente los accesos almacenados (sin asignar defaults aquí)
   const accesos = user?.accesos || {};
-
-  // Verificar si existe al menos un permiso activo (true)
   const hasAccesos = Object.values(accesos).some(value => value === true);
 
   return (
@@ -104,8 +95,8 @@ useEffect(() => {
       <style>{`
         .sidebar {
           width: 250px;
-          background: #333;
-          color: #fff;
+          background: #8B0000;
+          color: #FFF8F0;
           padding: 1rem;
         }
         .sidebar-header {
@@ -125,13 +116,13 @@ useEffect(() => {
         }
         .sidebar-nav a {
           text-decoration: none;
-          color: #f8f9fa;
+          color: #FFF8F0;
           font-size: 1.1rem;
           font-weight: 600;
           transition: color 0.3s ease;
         }
         .sidebar-nav a:hover {
-          color: #dc3545;
+          color: #D4AF37;
         }
       `}</style>
     </aside>
