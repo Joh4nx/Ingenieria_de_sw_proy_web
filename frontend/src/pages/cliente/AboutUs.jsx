@@ -2,7 +2,6 @@
 import React from 'react';
 import NavbarCliente from '../../components/NavbarCliente';
 import backgroundImage from '../../assets/images/restaurante-fondo.jpg';
-import aboutVideo from '../../assets/videos/restaurant-video.mp4';
 
 function AboutUs() {
   return (
@@ -46,9 +45,7 @@ function AboutUs() {
 
         <div className="section video">
           <h2>Conoce Más</h2>
-          <div className="video-wrapper">
-            <video src={aboutVideo} controls autoPlay loop muted />
-          </div>
+          
         </div>
       </section>
 

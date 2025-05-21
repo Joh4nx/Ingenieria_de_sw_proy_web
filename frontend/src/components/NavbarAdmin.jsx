@@ -29,51 +29,63 @@ const NavbarAdmin = () => {
 
   return (
     <nav className="navbar-admin" role="navigation" aria-label="Navegación administrativa">
-      <div className="navbarContainer">
-        <Link to="/admin" className="navbarBrand" onClick={closeMenu}>
-          <img src="/logo.png" alt="Logo de El Gusto de Don Justo" />
-          <span className="brandText">Admin Panel</span>
-        </Link>
-        <ul className={`navMenu ${menuOpen ? 'active' : ''}`}>
-          <li className="navItem">
-            <Link to="/admin" className="navLink" onClick={closeMenu}>Inicio</Link>
-          </li>
-          <li className="navItem">
-            <Link to="/admin/platos" className="navLink" onClick={closeMenu}>Platos</Link>
-          </li>
-          <li className="navItem">
-            <Link to="/admin/reservas" className="navLink" onClick={closeMenu}>Reservas</Link>
-          </li>
-          <li className="navItem">
-            {user ? (
-              <div className="user-profile" onClick={toggleDropdown}>
-                <img
-                  src={user.avatar || '/default-avatar.png'}
-                  alt={user.nombre}
-                  className="user-avatar"
-                />
-                <span className="user-name">{user.nombre}</span>
-                {dropdownOpen && (
-                  <div className="profile-dropdown">
-                    <Link to="/perfil" onClick={closeMenu} className="dropdown-link">Ver Perfil</Link>
-                    <Link to="/configuraciones" onClick={closeMenu} className="dropdown-link">Configuraciones</Link>
-                    <button onClick={handleLogout} className="dropdown-link logout">Cerrar Sesión</button>
+      <div className="navbarWrapper">
+        {/* Columna izquierda para imagen SVG decorativa */}
+        
+        {/* Contenido de navegación */}
+        <div className="navbarRight">
+          <div className="navbarContainer">
+            <Link to="/admin" className="navbarBrand" onClick={closeMenu}>
+              <img src="/legolas.svg" alt="Logo de El Gusto de Don Justo" />
+              <span className="brandText">Admin Panel</span>
+            </Link>
+
+            <ul className={`navMenu ${menuOpen ? 'active' : ''}`}
+            style={{
+    display: 'flex',
+    
+    justifyContent: 'center', // centra verticalmente
+    alignItems: 'center',     // centra horizontalmente (opcional)
+            // ocupar toda la altura de la ventana para centrar verticalmente
+    padding: 0,
+    margin: 0,
+    listStyle: 'none',
+    
+  }}>
+              <li className="navItem"><Link to="/admin" className="navLink" onClick={closeMenu}>Inicio</Link></li>
+              <li className="navItem"><Link to="/admin/platos" className="navLink" onClick={closeMenu}>Platos</Link></li>
+              <li className="navItem"><Link to="/admin/reservas" className="navLink" onClick={closeMenu}>Reservas</Link></li>
+              <li className="navItem">
+                {user ? (
+                  <div className="user-profile" onClick={toggleDropdown}>
+                    <img src={user.avatar || '/default-avatar.png'} alt={user.nombre} className="user-avatar" />
+                    <span className="user-name">{user.nombre}</span>
+                    {dropdownOpen && (
+                      <div className="profile-dropdown">
+                        <Link to="/perfil" onClick={closeMenu} className="dropdown-link">Ver Perfil</Link>
+                        <Link to="/configuraciones" onClick={closeMenu} className="dropdown-link">Configuraciones</Link>
+                        <button onClick={handleLogout} className="dropdown-link logout">Cerrar Sesión</button>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <Link to="/login" className="navLink login" onClick={closeMenu}>
+                    <FiUser size={20} />
+                  </Link>
                 )}
-              </div>
-            ) : (
-              <Link to="/login" className="navLink login" onClick={closeMenu}>
-                <FiUser size={20} />
-              </Link>
-            )}
-          </li>
-        </ul>
-        <button className={`menuToggle ${menuOpen ? 'active' : ''}`} onClick={toggleMenu} aria-label="Toggle navigation">
-          <span className="bar"></span>
-          <span className="bar"></span>
-          <span className="bar"></span>
-        </button>
+              </li>
+            </ul>
+
+            <button className={`menuToggle ${menuOpen ? 'active' : ''}`} onClick={toggleMenu} aria-label="Toggle navigation">
+              <span className="bar"></span>
+              <span className="bar"></span>
+              <span className="bar"></span>
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Estilos actualizados */}
       <style>{`
         :root {
           --navbar-bg: rgba(0, 0, 0, 0.95);
@@ -81,207 +93,186 @@ const NavbarAdmin = () => {
           --accent-color: #dc3545;
           --transition-speed: 0.3s;
         }
+
         .navbar-admin {
+          width: 100%;
           background: var(--navbar-bg);
           position: fixed;
-          width: 100%;
           top: 0;
           z-index: 1000;
-          backdrop-filter: blur(8px);
-          padding: 0.5rem 0;
+          backdrop-filter: blur(10px);
         }
+
+        .navbarWrapper {
+          display: flex;
+          width: 100%;
+        }
+
+        .navbarLeft {
+          flex: 0 0 80px;
+          background: rgba(255,255,255,0.05);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.5rem;
+        }
+
+        .svg-decorativo {
+          width: 48px;
+          height: 48px;
+        }
+
+        .navbarRight {
+          flex: 1;
+        }
+
         .navbarContainer {
-          max-width: 1200px;
-          margin: 0 auto;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0 1.5rem;
+          padding: 0.75rem 1.5rem;
+          max-width: 1200px;
+          margin: 0 auto;
         }
+
         .navbarBrand {
           display: flex;
           align-items: center;
-          gap: 0.8rem;
+          gap: 0.75rem;
           text-decoration: none;
-          transition: opacity var(--transition-speed);
         }
-        .navbarBrand:hover {
-          opacity: 0.9;
-        }
+
         .navbarBrand img {
-          height: 50px;
-          width: auto;
-          max-width: 100%;
+          height: 40px;
         }
+
         .brandText {
           color: var(--text-color);
-          font-size: 1.25rem;
+          font-size: 1.2rem;
           font-weight: 600;
-          white-space: nowrap;
         }
+
         .navMenu {
           display: flex;
           gap: 2rem;
+          
           list-style: none;
-          margin: 0;
-          padding: 0;
         }
+
         .navLink {
           color: var(--text-color);
           text-decoration: none;
-          font-weight: 500;
           position: relative;
-          padding: 0.5rem 0;
-          transition: color var(--transition-speed) ease;
+          font-weight: 500;
         }
+
         .navLink::after {
           content: '';
           position: absolute;
-          bottom: 0;
+          bottom: -3px;
           left: 0;
           width: 0;
           height: 2px;
           background: var(--accent-color);
-          transition: width var(--transition-speed) ease;
+          transition: width var(--transition-speed);
         }
+
         .navLink:hover::after {
           width: 100%;
         }
-        /* Botón de login (cuando no hay usuario) */
+
         .navLink.login {
-          background: var(--accent-color);
-          border: 2px solid var(--accent-color);
-          border-radius: 25px;
-          padding: 0.5rem 1.5rem;
-          transition: all var(--transition-speed) ease;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          position: relative;
-          overflow: hidden;
-        }
-        .navLink.login::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
-          transition: left var(--transition-speed);
-        }
-        .navLink.login:hover {
-          background: #c82333;
-          border-color: #c82333;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
-        }
-        .navLink.login:hover::before {
-          left: 100%;
-        }
-        /* Perfil de usuario (cuando ya ha iniciado sesión) */
-        .user-profile {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          cursor: pointer;
           padding: 0.5rem 1rem;
-          border: 2px solid var(--accent-color);
-          border-radius: 25px;
-          transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+          background: var(--accent-color);
+          border-radius: 999px;
+          display: flex;
+          align-items: center;
+          color: white;
+        }
+
+        .user-profile {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          border: 1px solid var(--accent-color);
+          border-radius: 999px;
+          cursor: pointer;
           position: relative;
         }
-        .user-profile:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
-        }
+
         .user-avatar {
           width: 30px;
           height: 30px;
           border-radius: 50%;
           object-fit: cover;
         }
+
         .user-name {
           color: var(--text-color);
-          font-weight: 500;
-          font-size: 1rem;
         }
+
         .profile-dropdown {
           position: absolute;
-          top: 110%;
+          top: 100%;
           right: 0;
+          margin-top: 0.25rem;
           background: var(--navbar-bg);
           border: 1px solid var(--accent-color);
           border-radius: 8px;
-          padding: 0.5rem 0;
           min-width: 150px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-          z-index: 1002;
+          overflow: hidden;
+          z-index: 9999;
         }
+
         .profile-dropdown .dropdown-link {
           display: block;
           padding: 0.5rem 1rem;
           color: var(--text-color);
           text-decoration: none;
-          font-size: 0.9rem;
-          transition: background var(--transition-speed);
+          font-size: 0.95rem;
         }
+
         .profile-dropdown .dropdown-link:hover {
           background: rgba(255,255,255,0.1);
         }
-        .profile-dropdown .logout {
-          border: none;
-          background: none;
-          width: 100%;
-          text-align: left;
-          cursor: pointer;
-        }
+
         .menuToggle {
           display: none;
           background: none;
           border: none;
-          cursor: pointer;
-          padding: 0.5rem;
-          z-index: 1001;
         }
+
         .bar {
-          display: block;
           width: 25px;
           height: 3px;
-          margin: 5px auto;
           background: var(--text-color);
-          transition: all var(--transition-speed) ease;
+          margin: 4px 0;
         }
+
         /* Responsive */
         @media (max-width: 768px) {
           .menuToggle {
             display: block;
           }
-          .menuToggle.active .bar:nth-child(1) {
-            transform: translateY(8px) rotate(45deg);
-          }
-          .menuToggle.active .bar:nth-child(2) {
-            opacity: 0;
-          }
-          .menuToggle.active .bar:nth-child(3) {
-            transform: translateY(-8px) rotate(-45deg);
-          }
+
           .navMenu {
-            position: fixed;
-            top: 60px;
-            right: -100%;
-            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            right: 0;
             background: var(--navbar-bg);
+            flex-direction: column;
             width: 100%;
             text-align: center;
-            padding: 1rem 0;
-            transition: right var(--transition-speed) ease;
+            display: none;
           }
+
           .navMenu.active {
-            right: 0;
+            display: flex;
           }
+
           .navItem {
-            margin: 0.75rem 0;
+            margin: 0.5rem 0;
           }
         }
       `}</style>

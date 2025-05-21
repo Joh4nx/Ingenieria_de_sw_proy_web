@@ -244,8 +244,8 @@ const styles = {
   form: {
     backgroundColor: '#f8f9fa',
     padding: '1rem 2rem',
-    borderRadius: '8px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    borderRadius: '12px',               // más redondeado
+    boxShadow: '0 4px 6px rgba(139, 0, 0, 0.15)',  // sombra roja suave
     marginBottom: '2rem'
   },
   formGroup: {
@@ -256,18 +256,24 @@ const styles = {
   input: {
     padding: '0.5rem',
     fontSize: '1rem',
-    border: '1px solid #ccc',
-    borderRadius: '4px'
+    border: '2px solid #8B0000',       // borde rojo fuerte
+    borderRadius: '8px',                // bordes redondeados
+    outline: 'none',
+    transition: 'border-color 0.3s',
   },
   addButton: {
     padding: '0.75rem 1.5rem',
-    backgroundColor: '#2196F3',
+    backgroundColor: '#8B0000',         // rojo oscuro
     color: '#fff',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '12px',               // más redondeado
     fontSize: '1rem',
     cursor: 'pointer',
-    transition: 'background 0.3s'
+    transition: 'background 0.3s',
+    boxShadow: '0 4px 8px rgba(139, 0, 0, 0.4)',
+  },
+  addButtonHover: {
+    backgroundColor: '#a80000',
   },
   grid: {
     display: 'grid',
@@ -276,8 +282,8 @@ const styles = {
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+    borderRadius: '16px',               // bordes más redondeados
+    boxShadow: '0 6px 12px rgba(0,0,0,0.12)',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column'
@@ -285,14 +291,18 @@ const styles = {
   cardHeader: {
     backgroundColor: '#f5f5f5',
     padding: '1rem',
-    textAlign: 'center'
+    textAlign: 'center',
+    borderBottom: '2px solid #8B0000'  // borde rojo para separar
   },
   cardBody: {
     padding: '1rem',
     textAlign: 'center'
   },
   qrContainer: {
-    marginBottom: '1rem'
+    marginBottom: '1rem',
+    borderRadius: '12px',
+    border: '2px solid #8B0000',       // marco rojo para QR
+    padding: '0.5rem'
   },
   qrText: {
     fontFamily: 'monospace',
@@ -300,10 +310,11 @@ const styles = {
   },
   estado: {
     fontWeight: 'bold',
-    marginBottom: '0.5rem'
+    marginBottom: '0.5rem',
+    color: '#8B0000'                   // texto rojo para estado
   },
   llamando: {
-    color: '#d32f2f',
+    color: '#8B0000',
     fontWeight: 'bold',
     marginBottom: '0.5rem'
   },
@@ -315,12 +326,16 @@ const styles = {
   responseButton: {
     padding: '0.5rem 1rem',
     margin: '0 0.5rem',
-    backgroundColor: '#FFA000',
+    backgroundColor: '#8B0000',         // rojo oscuro
     color: '#fff',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '10px',               // más redondeado
     cursor: 'pointer',
-    transition: 'background 0.3s'
+    transition: 'background 0.3s',
+    boxShadow: '0 3px 6px rgba(139, 0, 0, 0.5)'
+  },
+  responseButtonHover: {
+    backgroundColor: '#a80000'
   },
   expiracion: {
     fontSize: '0.9rem',
@@ -331,10 +346,15 @@ const styles = {
     color: '#fff',
     border: 'none',
     padding: '0.5rem 1rem',
-    borderRadius: '4px',
+    borderRadius: '12px',               // bordes redondeados
     cursor: 'pointer',
-    transition: 'background 0.3s'
+    transition: 'background 0.3s',
+    boxShadow: '0 3px 6px rgba(0, 128, 0, 0.4)'
+  },
+  btnActionHover: {
+    backgroundColor: '#388E3C'
   }
 };
+
 
 export default GestionMesas;
