@@ -478,7 +478,7 @@ const styles = {
     marginTop: '1rem',
   },
   actionButton: {
-    background: '#1976d2',
+    background: '#ba000d',
     color: '#fff',
     padding: '0.5rem 1rem',
     border: 'none',

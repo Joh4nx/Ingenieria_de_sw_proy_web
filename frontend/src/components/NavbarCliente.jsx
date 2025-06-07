@@ -27,7 +27,7 @@ const NavbarCliente = () => {
   };
 
   return (
-    <nav className="navbar" role="navigation" aria-label="Navegación principal">
+    <nav className="navbar custom-font" role="navigation" aria-label="Navegación principal">
       <div className="navbarContainer">
         {/* Logo a la izquierda */}
         <Link to="/" className="navbarBrand" onClick={closeMenu}>
@@ -88,7 +88,14 @@ const NavbarCliente = () => {
         </button>
       </div>
 
+      {/* Estilos internos con fuente exclusiva */}
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=ROKKITT:wght@400;600&display=swap');
+
+        .custom-font, .custom-font * {
+          font-family: 'ROKKITT', sans-serif !important;
+        }
+
         :root {
           --navbar-bg: #8B0000;
           --text-color: #f8f9fa;
@@ -109,10 +116,10 @@ const NavbarCliente = () => {
           max-width: 1280px;
           margin: 0 auto;
           display: flex;
-          align-items: center; /* 🔧 Alineación vertical centrada */
+          align-items: center;
           justify-content: space-between;
           padding: 0 1.5rem;
-          height: 70px; /* 🔧 Altura fija para alinear mejor */
+          height: 70px;
         }
 
         .navbarBrand {
@@ -138,15 +145,13 @@ const NavbarCliente = () => {
           flex: 2;
           display: flex;
           justify-content: center;
-          align-items: center; /* 🔧 Alinea verticalmente */
+          align-items: center;
           gap: 2rem;
           list-style: none;
           padding: 0;
           margin: 0;
-          height: 100%; /* 🔧 Asegura alineación */
+          height: 100%;
         }
-
-        .navItem {}
 
         .navLink {
           color: var(--text-color);
@@ -190,7 +195,7 @@ const NavbarCliente = () => {
           flex: 1;
           display: flex;
           justify-content: flex-end;
-          align-items: center; /* 🔧 Alineación vertical */
+          align-items: center;
           height: 100%;
         }
 
