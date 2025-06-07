@@ -1,6 +1,5 @@
-// src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import HomeCliente from './pages/cliente/HomeCliente';
 import MenuPage from './pages/cliente/MenuPage';
 import ReservasPage from './pages/cliente/ReservasPage';
@@ -23,33 +22,31 @@ import ForgotPasswordPage from './pages/cliente/ForgotPasswordPage';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Rutas para clientes */}
-        <Route path="/" element={<HomeCliente />} />
-        <Route path="/menu" element={<MenuPage />} />
-        <Route path="/reservas" element={<ReservasPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/pedidos" element={<TipoPedido />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+    <Routes>
+      {/* Rutas para clientes */}
+      <Route path="/" element={<HomeCliente />} />
+      <Route path="/menu" element={<MenuPage />} />
+      <Route path="/reservas" element={<ReservasPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/pedidos" element={<TipoPedido />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Rutas para administración, anidadas en AdminLayout */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="platos" element={<GestionPlatos />} />
-          <Route path="reservas" element={<GestionReservas />} />
-          <Route path="/admin/mesas" element={<GestionMesas />} />
-          <Route path="/admin/pedidos" element={<GestionPedidos />} />
-          <Route path="/admin/inventario" element={<GestionInventario />} />
-          <Route path="/admin/usuarios" element={<GestionUsuarios />} />
-          <Route path="/admin/cajero" element={<CajeroDashboard />} />
-          <Route path="/admin/reportes" element={<ReportesDashboard />} />
-          <Route path="/admin/roles" element={<GestionRoles />} />
-        </Route>
-      </Routes>
-    </Router>
+      {/* Rutas para administración, anidadas en AdminLayout */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="platos" element={<GestionPlatos />} />
+        <Route path="reservas" element={<GestionReservas />} />
+        <Route path="mesas" element={<GestionMesas />} />
+        <Route path="pedidos" element={<GestionPedidos />} />
+        <Route path="inventario" element={<GestionInventario />} />
+        <Route path="usuarios" element={<GestionUsuarios />} />
+        <Route path="cajero" element={<CajeroDashboard />} />
+        <Route path="reportes" element={<ReportesDashboard />} />
+        <Route path="roles" element={<GestionRoles />} />
+      </Route>
+    </Routes>
   );
 }
 

@@ -8,6 +8,7 @@ const NavbarAdmin = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
+  console.log("{ user, logout }",);
   const navigate = useNavigate();
 
   const toggleMenu = () => setMenuOpen(prev => !prev);

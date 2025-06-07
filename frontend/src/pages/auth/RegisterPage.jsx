@@ -15,21 +15,21 @@ export default function RegisterPage() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
-      return;
-    }
-    setLoading(true);
-    try {
-      await signup(nombre, email, password);
-      navigate('/login');
-    } catch (err) {
-      setError(err.message);
-    }
-    setLoading(false);
-  };
+  e.preventDefault();
+  setError('');
+  if (password !== confirmPassword) {
+    setError('Las contraseñas no coinciden.');
+    return;
+  }
+  setLoading(true);
+  try {
+    await signup(nombre, email, password);
+    navigate('/login');     // ← Aquí sigues redirigiendo
+  } catch (err) {
+    setError(err.message);
+  }
+  setLoading(false);
+};
 
   return (
     <div className="register-page">
