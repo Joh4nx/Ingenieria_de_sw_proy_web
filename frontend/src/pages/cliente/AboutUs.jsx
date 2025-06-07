@@ -1,7 +1,9 @@
-// src/pages/cliente/AboutUs.jsx
 import React from 'react';
 import NavbarCliente from '../../components/NavbarCliente';
 import backgroundImage from '../../assets/images/restaurante-fondo.jpg';
+import valuesImage from '../../assets/images/valores.jpg';       // Imagen para valores
+import teamImage from '../../assets/images/equipo.jpg';          // Imagen del equipo
+import comidaImage from '../../assets/images/comida-destacada.jpg'; // Imagen comida destacada
 
 function AboutUs() {
   return (
@@ -27,25 +29,41 @@ function AboutUs() {
           <p>
             Fundado en 2002, El Gusto de Don Justo comenzó como un pequeño local familiar, con la idea de compartir la pasión por la auténtica comida argentina. Con los años, nos hemos convertido en un referente gastronómico donde cada plato cuenta una historia de tradición, dedicación y amor por la buena comida.
           </p>
+          <img src={teamImage} alt="Nuestro equipo" style={{width: '100%', borderRadius: '12px', marginTop: '1rem'}} />
         </div>
 
-        <div className="section mission">
+      <div className="section mission">
           <h2>Nuestra Misión</h2>
           <p>
             Nuestra misión es brindar experiencias culinarias inolvidables, utilizando ingredientes frescos y locales para crear platos únicos que despiertan los sentidos. Nos esforzamos por ofrecer un ambiente acogedor y un servicio excepcional en cada visita.
           </p>
+          <div style={{ marginTop: '1rem' }}>
+            <img
+              src={comidaImage}
+              alt="Sopa de Maní"
+              style={{ width: '100%', borderRadius: '12px' }}
+            />
+            <p style={{ textAlign: 'center', fontStyle: 'italic', marginTop: '0.5rem', color: '#555' }}>
+              La tradicional Sopa de Maní, un plato emblemático de nuestra cocina.
+            </p>
+          </div>
         </div>
 
-        <div className="section vision">
-          <h2>Nuestra Visión</h2>
+
+        {/* Añadido texto e imagen para la sección de valores */}
+        <div className="section values">
+          <h2>Nuestros Valores</h2>
           <p>
-            Aspiramos a ser el restaurante líder en cocina argentina, fusionando tradición e innovación para deleitar a nuestros comensales y dejar una huella imborrable en el mundo gastronómico.
+            En El Gusto de Don Justo, creemos que el éxito se basa en la calidad, la pasión y el compromiso con nuestros clientes y la comunidad. Nuestros valores nos guían en cada decisión y acción que tomamos.
           </p>
+          <img src={valuesImage} alt="Valores del restaurante" style={{width: '100%', borderRadius: '12px', marginTop: '1rem'}} />
         </div>
 
         <div className="section video">
           <h2>Conoce Más</h2>
-          
+          <p>
+            Te invitamos a visitarnos para poder disfrutar de una experiencia gastronómica única. Y conocer de primera mano la comida que nos ha hecho famosos.
+          </p>
         </div>
       </section>
 

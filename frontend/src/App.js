@@ -19,6 +19,9 @@ import ReportesDashboard from './pages/admin/ReportesDashboard';
 import GestionRoles from './pages/admin/GestionRoles';
 import AboutUs from './pages/cliente/AboutUs';
 import ForgotPasswordPage from './pages/cliente/ForgotPasswordPage';
+import Perfil from './pages/admin/Perfil';
+import Configuraciones from './pages/admin/Configuraciones';
+
 
 function App() {
   return (
@@ -45,6 +48,8 @@ function App() {
         <Route path="cajero" element={<CajeroDashboard />} />
         <Route path="reportes" element={<ReportesDashboard />} />
         <Route path="roles" element={<GestionRoles />} />
+        <Route path="perfil" element={<Perfil />} />
+        <Route path="configuraciones" element={<Configuraciones />} />
       </Route>
     </Routes>
   );

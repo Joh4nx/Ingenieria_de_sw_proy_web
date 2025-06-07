@@ -1,4 +1,3 @@
-// src/components/NavbarAdmin.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiUser } from 'react-icons/fi';
@@ -8,7 +7,6 @@ const NavbarAdmin = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
-  console.log("{ user, logout }",);
   const navigate = useNavigate();
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
@@ -31,9 +29,6 @@ const NavbarAdmin = () => {
   return (
     <nav className="navbar-admin" role="navigation" aria-label="Navegación administrativa">
       <div className="navbarWrapper">
-        {/* Columna izquierda para imagen SVG decorativa */}
-        
-        {/* Contenido de navegación */}
         <div className="navbarRight">
           <div className="navbarContainer">
             <Link to="/admin" className="navbarBrand" onClick={closeMenu}>
@@ -41,30 +36,20 @@ const NavbarAdmin = () => {
               <span className="brandText">Admin Panel</span>
             </Link>
 
-            <ul className={`navMenu ${menuOpen ? 'active' : ''}`}
-            style={{
-    display: 'flex',
-    
-    justifyContent: 'center', // centra verticalmente
-    alignItems: 'center',     // centra horizontalmente (opcional)
-            // ocupar toda la altura de la ventana para centrar verticalmente
-    padding: 0,
-    margin: 0,
-    listStyle: 'none',
-    
-  }}>
+            <ul className={`navMenu ${menuOpen ? 'active' : ''}`}>
               <li className="navItem"><Link to="/admin" className="navLink" onClick={closeMenu}>Inicio</Link></li>
               <li className="navItem"><Link to="/admin/platos" className="navLink" onClick={closeMenu}>Platos</Link></li>
               <li className="navItem"><Link to="/admin/reservas" className="navLink" onClick={closeMenu}>Reservas</Link></li>
               <li className="navItem">
                 {user ? (
                   <div className="user-profile" onClick={toggleDropdown}>
-                    <img src={user.avatar || '/default-avatar.png'} alt={user.nombre} className="user-avatar" />
-                    <span className="user-name">{user.nombre}</span>
+                    <img src={user.avatar || '/default-avatar.png'} alt={user.nombre || "Usuario"} className="user-avatar" />
+                    <span className="user-name">{user.nombre || "Usuario"}</span>
                     {dropdownOpen && (
                       <div className="profile-dropdown">
-                        <Link to="/perfil" onClick={closeMenu} className="dropdown-link">Ver Perfil</Link>
-                        <Link to="/configuraciones" onClick={closeMenu} className="dropdown-link">Configuraciones</Link>
+                        <Link to="/admin/perfil" onClick={closeMenu} className="dropdown-link">Ver Perfil</Link>
+                        <Link to="/admin/configuraciones" onClick={closeMenu} className="dropdown-link">Configuraciones</Link>
+                        
                         <button onClick={handleLogout} className="dropdown-link logout">Cerrar Sesión</button>
                       </div>
                     )}
@@ -86,7 +71,6 @@ const NavbarAdmin = () => {
         </div>
       </div>
 
-      {/* Estilos actualizados */}
       <style>{`
         :root {
           --navbar-bg: rgba(0, 0, 0, 0.95);
@@ -107,20 +91,6 @@ const NavbarAdmin = () => {
         .navbarWrapper {
           display: flex;
           width: 100%;
-        }
-
-        .navbarLeft {
-          flex: 0 0 80px;
-          background: rgba(255,255,255,0.05);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0.5rem;
-        }
-
-        .svg-decorativo {
-          width: 48px;
-          height: 48px;
         }
 
         .navbarRight {
@@ -156,8 +126,10 @@ const NavbarAdmin = () => {
         .navMenu {
           display: flex;
           gap: 2rem;
-          
           list-style: none;
+          margin: 0;
+          padding: 0;
+          align-items: center;
         }
 
         .navLink {
@@ -218,24 +190,32 @@ const NavbarAdmin = () => {
           top: 100%;
           right: 0;
           margin-top: 0.25rem;
-          background: var(--navbar-bg);
+          background: var(--navbar-bg, #111);
           border: 1px solid var(--accent-color);
           border-radius: 8px;
-          min-width: 150px;
-          overflow: hidden;
+          min-width: 160px;
           z-index: 9999;
         }
 
         .profile-dropdown .dropdown-link {
           display: block;
-          padding: 0.5rem 1rem;
-          color: var(--text-color);
+          padding: 0.6rem 1rem;
+          color: var(--text-color, #fff);
           text-decoration: none;
           font-size: 0.95rem;
+          background: transparent;
+          border: none;
+          text-align: left;
+          width: 100%;
         }
 
         .profile-dropdown .dropdown-link:hover {
-          background: rgba(255,255,255,0.1);
+          background: rgba(255, 255, 255, 0.1);
+          cursor: pointer;
+        }
+
+        .profile-dropdown .logout {
+          color: var(--text-color, #fff);
         }
 
         .menuToggle {
@@ -251,7 +231,6 @@ const NavbarAdmin = () => {
           margin: 4px 0;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
           .menuToggle {
             display: block;
