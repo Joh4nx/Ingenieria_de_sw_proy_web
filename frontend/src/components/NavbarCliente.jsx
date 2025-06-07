@@ -113,7 +113,7 @@ const NavbarCliente = () => {
         }
 
         .navbarContainer {
-          max-width: 1280px;
+          max-width: 1500px;
           margin: 0 auto;
           display: flex;
           align-items: center;
