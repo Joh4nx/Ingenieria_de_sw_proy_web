@@ -56,7 +56,9 @@ const AdminDashboard = () => {
           top: 80px;
           bottom: 0;
           left: 0;
+          overflow-y: auto; /* permite el scroll vertical */
         }
+
         .sidebar-header {
           text-align: center;
           margin-bottom: 2rem;
@@ -65,10 +67,10 @@ const AdminDashboard = () => {
           font-size: 1.5rem;
         }
         .sidebar-nav ul {
-          list-style: none;
-          padding: 0;
-          margin: 0;
+          max-height: calc(100vh - 150px); /* evita que se desborde */
+          overflow-y: auto;
         }
+
         .sidebar-nav li {
           margin-bottom: 1.5rem;
         }
