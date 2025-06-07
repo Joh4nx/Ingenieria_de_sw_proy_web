@@ -336,7 +336,7 @@ function GestionPlatos() {
                 ) : (
                   <div style={styles.noImage}>Sin imagen</div>
                 )}
-                <div style={styles.cardPrice}>${plato.precio}</div>
+                <div style={styles.cardPrice}>Bs.{plato.precio}</div>
               </div>
               <div style={styles.cardBody}>
                 <h3 style={styles.cardTitle}>{plato.nombre}</h3>
