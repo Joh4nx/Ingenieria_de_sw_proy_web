@@ -169,7 +169,8 @@ app.post('/usuarios', async (req, res) => {
       nombre,
       email,
       password: hashedPassword,       // ← guardamos el hash, no el texto plano
-      role: role || 'cliente'
+      role: role || 'cliente',
+      accesos: {}
     };
 
     const usuarioRef = db.ref('usuarios').push();
@@ -214,7 +215,8 @@ app.post('/login', async (req, res) => {
         id: usuarioId,
         email: usuario.email,
         role: usuario.role,
-        nombre: usuario.nombre
+        nombre: usuario.nombre,
+        accesos: usuario.accesos || {} 
       }
     });
   } catch (error) {

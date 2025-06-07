@@ -1,0 +1,29 @@
+.container { background:#FFF8F0; font-family:'Playfair Display',sans-serif; color:#333; }
+.hero { position:relative; height:100vh; background-size:cover; display:flex;align-items:center;justify-content:center; }
+.hero::after { content:''; position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.2); }
+.heroOverlay { position:relative; text-align:center; color:#fff; padding:0 2rem; }
+.heroTitle { font-size:4rem; margin-bottom:1rem; }
+.highlight { color:#D4AF37; display:block; }
+.heroSubtitle { margin-bottom:2rem; font-size:1.5rem; }
+.heroActions { display:flex; gap:1rem; justify-content:center; }
+.btn { padding:.75rem 2rem; border-radius:50px; text-decoration:none; font-weight:600; }
+.primary { background:#D4AF37; color:#8B0000; }
+.secondary { background:transparent; border:2px solid #fff; color:#fff; }
+.features { padding:4rem 0; text-align:center; }
+.sectionTitle { font-size:2.5rem; margin-bottom:1rem; color:#8B0000; }
+.carousel { max-width:1200px; margin:0 auto; }
+.card { padding:0 1rem; }
+.plate { position:relative; border:8px solid #D4AF37; border-radius:50%; overflow:hidden; width:300px;height:300px;margin:0 auto; }
+.image { width:100%;height:100%;object-fit:cover; }
+.overlay { position:absolute;bottom:0;left:0;width:100%;background:rgba(255,255,255,.9);padding:1rem; transform:translateY(100%);transition:transform .3s; text-align:center; }
+.card:hover .overlay { transform:translateY(0); }
+.price { display:inline-block; background:#D4AF37; color:#fff; padding:.5rem 1rem; border-radius:30px; margin-bottom:.5rem; }
+.cta { padding:3rem 0; background:linear-gradient(135deg,#8B0000,#2A2A2A); color:#fff; text-align:center; }
+.ctaButton { padding:.75rem 2rem; background:#D4AF37; color:#8B0000; border-radius:50px; text-decoration:none; }
+.contact { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2rem; padding:3rem 2rem; }
+.infoCard { background:#fff; padding:1.5rem; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.1); text-align:center; cursor:pointer; }
+.mapOverlay { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8); display:flex;align-items:center;justify-content:center; }
+.mapCircle { width:80vmin;height:80vmin;border-radius:50%; overflow:hidden; }
+.whatsapp { position:fixed;bottom:20px;right:20px;background:#25d366;border-radius:50%;padding:.5rem;box-shadow:0 2px 8px rgba(0,0,0,.2); }
+.animate { opacity:0;transition:opacity .6s,transform .6s;transform:translateY(20px); }
+.visible { opacity:1;transform:translateY(0); }
