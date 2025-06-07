@@ -396,7 +396,7 @@ function PlatoCard({ plato }) {
       <img src={plato.imagen} alt={plato.nombre} />
       <h3>{plato.nombre}</h3>
       <p>{plato.descripcion}</p>
-      <div className="precio">Bs {plato.precio.toFixed(2)}</div>
+      <div className="precio">${plato.precio.toFixed(2)}</div>
       <style>{`
         .plato-card {
           text-align: center;

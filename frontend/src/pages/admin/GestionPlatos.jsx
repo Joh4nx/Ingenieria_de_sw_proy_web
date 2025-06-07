@@ -52,50 +52,25 @@ function GestionPlatos() {
     }
   };
 
-  // Validar campos y evitar duplicados por nombre (insensible a mayúsculas)
-  const validarPlato = (platoObj, esEdicion = false) => {
-    const nombreTrim = platoObj.nombre.trim();
-    if (!nombreTrim || !platoObj.descripcion.trim()) {
-      setError('El nombre y la descripción son obligatorios.');
-      return false;
-    }
-    if (!platoObj.precio || Number(platoObj.precio) <= 0) {
-      setError('El precio debe ser un número positivo.');
-      return false;
-    }
-    if (!platoObj.categoria.trim()) {
-      setError('La categoría es obligatoria.');
-      return false;
-    }
-    const nombreLower = nombreTrim.toLowerCase();
-    const existeRepetido = platos.some(p => {
-      if (esEdicion && p.id === platoObj.id) return false;
-      return p.nombre.trim().toLowerCase() === nombreLower;
-    });
-    if (existeRepetido) {
-      setError('Ya existe un plato con ese nombre.');
-      return false;
-    }
-    return true;
-  };
-
   const handleAgregarPlato = (e) => {
     e.preventDefault();
     setMensaje('');
     setError('');
 
-    // Construimos objeto “candidato” para validar
-    const candidato = {
-      ...nuevoPlato,
-      id: null
-    };
-    if (!validarPlato(candidato, false)) return;
+    // Validaciones básicas
+    if (!nuevoPlato.nombre.trim() || !nuevoPlato.descripcion.trim()) {
+      setError('El nombre y la descripción son obligatorios.');
+      return;
+    }
+    if (!nuevoPlato.precio || Number(nuevoPlato.precio) <= 0) {
+      setError('El precio debe ser un número positivo.');
+      return;
+    }
 
     if (imagenFile) {
-      // Si suben archivo, usamos FormData
       const formData = new FormData();
-      formData.append('nombre', nuevoPlato.nombre.trim());
-      formData.append('descripcion', nuevoPlato.descripcion.trim());
+      formData.append('nombre', nuevoPlato.nombre);
+      formData.append('descripcion', nuevoPlato.descripcion);
       formData.append('precio', nuevoPlato.precio);
       formData.append('categoria', nuevoPlato.categoria);
       formData.append('imagen', imagenFile);
@@ -118,24 +93,15 @@ function GestionPlatos() {
           setImagenFile(null);
           cargarPlatos();
         })
-        .catch(err => {
-          console.error('Error al agregar plato:', err);
+        .catch(error => {
+          console.error('Error al agregar plato:', error);
           setError('Hubo un error al guardar el plato.');
         });
-
     } else {
-      // Si sólo ponen URL, enviamos JSON
-      const payload = {
-        nombre: nuevoPlato.nombre.trim(),
-        descripcion: nuevoPlato.descripcion.trim(),
-        precio: nuevoPlato.precio,
-        imagenUrl: nuevoPlato.imagenUrl.trim(),
-        categoria: nuevoPlato.categoria
-      };
       fetch('http://localhost:3001/menu', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(nuevoPlato),
       })
         .then(response => {
           if (!response.ok) {
@@ -150,16 +116,14 @@ function GestionPlatos() {
           setNuevoPlato({ nombre: '', descripcion: '', precio: '', imagenUrl: '', categoria: '' });
           cargarPlatos();
         })
-        .catch(err => {
-          console.error('Error al agregar plato:', err);
+        .catch(error => {
+          console.error('Error al agregar plato:', error);
           setError('Hubo un error al guardar el plato.');
         });
     }
   };
 
   const handleEliminarPlato = (id) => {
-    setMensaje('');
-    setError('');
     if (!window.confirm('¿Estás seguro que deseas eliminar este plato?')) return;
 
     fetch(`http://localhost:3001/menu/${id}`, {
@@ -177,25 +141,20 @@ function GestionPlatos() {
         setMensaje(data.mensaje || 'Plato eliminado con éxito');
         cargarPlatos();
       })
-      .catch(err => {
-        console.error('Error al eliminar plato:', err);
+      .catch(error => {
+        console.error('Error al eliminar plato:', error);
         setError('Hubo un error al eliminar el plato.');
       });
   };
 
   const activarEdicion = (plato) => {
     setModoEdicion(true);
-    // Capturamos la URL existente en .imagenUrl (si existe) y dejamos imagenFile en null
-    setPlatoEdicion({ ...plato, imagenFile: null });
-    setError('');
-    setMensaje('');
+    setPlatoEdicion({ ...plato });
   };
 
   const cancelarEdicion = () => {
     setModoEdicion(false);
     setPlatoEdicion(null);
-    setError('');
-    setMensaje('');
   };
 
   const handleActualizarPlato = (e) => {
@@ -203,14 +162,19 @@ function GestionPlatos() {
     setMensaje('');
     setError('');
 
-    if (!platoEdicion) return;
-    if (!validarPlato(platoEdicion, true)) return;
+    if (!platoEdicion.nombre.trim() || !platoEdicion.descripcion.trim()) {
+      setError('El nombre y la descripción son obligatorios.');
+      return;
+    }
+    if (!platoEdicion.precio || Number(platoEdicion.precio) <= 0) {
+      setError('El precio debe ser un número positivo.');
+      return;
+    }
 
     if (platoEdicion.imagenFile) {
-      // Si sube un archivo nuevo en edición, usamos FormData
       const formData = new FormData();
-      formData.append('nombre', platoEdicion.nombre.trim());
-      formData.append('descripcion', platoEdicion.descripcion.trim());
+      formData.append('nombre', platoEdicion.nombre);
+      formData.append('descripcion', platoEdicion.descripcion);
       formData.append('precio', platoEdicion.precio);
       formData.append('categoria', platoEdicion.categoria);
       formData.append('imagen', platoEdicion.imagenFile);
@@ -233,24 +197,15 @@ function GestionPlatos() {
           setPlatoEdicion(null);
           cargarPlatos();
         })
-        .catch(err => {
-          console.error('Error al actualizar plato:', err);
+        .catch(error => {
+          console.error('Error al actualizar plato:', error);
           setError('Hubo un error al actualizar el plato.');
         });
-
     } else {
-      // Si mantiene/edita sólo la URL de la imagen
-      const payload = {
-        nombre: platoEdicion.nombre.trim(),
-        descripcion: platoEdicion.descripcion.trim(),
-        precio: platoEdicion.precio,
-        imagenUrl: platoEdicion.imagenUrl.trim(),
-        categoria: platoEdicion.categoria
-      };
       fetch(`http://localhost:3001/menu/${platoEdicion.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(platoEdicion),
       })
         .then(response => {
           if (!response.ok) {
@@ -266,8 +221,8 @@ function GestionPlatos() {
           setPlatoEdicion(null);
           cargarPlatos();
         })
-        .catch(err => {
-          console.error('Error al actualizar plato:', err);
+        .catch(error => {
+          console.error('Error al actualizar plato:', error);
           setError('Hubo un error al actualizar el plato.');
         });
     }
@@ -277,11 +232,8 @@ function GestionPlatos() {
     <div style={styles.container}>
       <h1 style={styles.title}>Gestión de Platos</h1>
 
-      {/* ──────── Formulario para agregar/editar ──────── */}
-      <form
-        onSubmit={modoEdicion ? handleActualizarPlato : handleAgregarPlato}
-        style={styles.form}
-      >
+      {/* Formulario para agregar/editar */}
+      <form onSubmit={modoEdicion ? handleActualizarPlato : handleAgregarPlato} style={styles.form}>
         <label style={styles.label}>
           Nombre del Plato
           <input
@@ -294,7 +246,6 @@ function GestionPlatos() {
             style={styles.input}
           />
         </label>
-
         <label style={styles.label}>
           Descripción
           <input
@@ -307,7 +258,6 @@ function GestionPlatos() {
             style={styles.input}
           />
         </label>
-
         <label style={styles.label}>
           Precio (Bs)
           <input
@@ -321,7 +271,7 @@ function GestionPlatos() {
             min="1"
           />
         </label>
-
+        {/* Opciones para imagen */}
         <label style={styles.label}>
           Imagen (Subir archivo)
           <input
@@ -332,7 +282,6 @@ function GestionPlatos() {
             style={styles.input}
           />
         </label>
-
         <label style={styles.label}>
           O imagen (URL)
           <input
@@ -344,7 +293,6 @@ function GestionPlatos() {
             style={styles.input}
           />
         </label>
-
         <label style={styles.label}>
           Categoría
           <select
@@ -366,86 +314,41 @@ function GestionPlatos() {
           {modoEdicion ? 'Actualizar Plato' : 'Agregar Plato'}
         </button>
         {modoEdicion && (
-          <button
-            type="button"
-            onClick={cancelarEdicion}
-            style={{ ...styles.button, background: '#555', marginTop: '0.5rem' }}
-          >
+          <button type="button" onClick={cancelarEdicion} style={{ ...styles.button, background: '#555', marginTop: '0.5rem' }}>
             Cancelar Edición
           </button>
         )}
       </form>
 
-      {error && <p style={styles.errorText}>{error}</p>}
-      {mensaje && <p style={styles.successText}>{mensaje}</p>}
+      {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}
+      {mensaje && <p style={{ color: 'green', fontWeight: 'bold' }}>{mensaje}</p>}
 
       <h2 style={styles.subTitle}>Platos registrados</h2>
       <div style={styles.cardGrid}>
         {platos.length === 0 ? (
-          <p style={{ textAlign: 'center' }}>No hay platos registrados.</p>
+          <p>No hay platos registrados.</p>
         ) : (
-          platos.map(plato => {
-            // 1) Determinar “base” de la imagen: 
-            //    - Si empieza por "data:" usamos directamente el Base64.
-            //    - Si empieza por "http" o "/" (URL absoluta) lo dejamos tal cual.
-            //    - Si es ruta relativa (p.ej. "uploads/archivo.jpg"), la convertimos a "http://localhost:3001/uploads/archivo.jpg".
-            let srcBase = null;
-            if (plato.imagen) {
-              if (plato.imagen.startsWith('data:')) {
-                // ya viene como Base64 completo
-                srcBase = plato.imagen;
-              } else if (plato.imagen.startsWith('http') || plato.imagen.startsWith('/')) {
-                // URL absoluta
-                srcBase = plato.imagen;
-              } else {
-                // ruta relativa en tu servidor backend
-                srcBase = `http://localhost:3001/${plato.imagen}`;
-              }
-            } else if (plato.imagenUrl) {
-              // si el usuario puso manualmente una URL
-              srcBase = plato.imagenUrl;
-            }
-
-            // 2) Si srcBase está definido, le añadimos “cache‐buster” ?t=<id> (sólo en URLs HTTP)
-            let srcImagen = null;
-            if (srcBase) {
-              // No concatenamos ?t= a una cadena data:...
-              if (srcBase.startsWith('data:')) {
-                srcImagen = srcBase;
-              } else {
-                srcImagen = `${srcBase}${srcBase.includes('?') ? '&' : '?'}t=${plato.id}`;
-              }
-            }
-
-            return (
-              <div key={plato.id} style={styles.card}>
-                <div style={styles.cardImageContainer}>
-                  {srcImagen ? (
-                    <img src={srcImagen} alt={plato.nombre} style={styles.cardImage} />
-                  ) : (
-                    <div style={styles.noImage}>Sin imagen</div>
-                  )}
-                  <div style={styles.cardPrice}>Bs {plato.precio}</div>
-                </div>
-                <div style={styles.cardBody}>
-                  <h3 style={styles.cardTitle}>{plato.nombre}</h3>
-                  <p style={styles.cardText}>{plato.descripcion}</p>
-                  <p style={styles.cardCategory}>{plato.categoria || 'N/A'}</p>
-                  <div style={styles.cardActions}>
-                    <button onClick={() => activarEdicion(plato)} style={styles.actionButton}>
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleEliminarPlato(plato.id)}
-                      style={{ ...styles.actionButton, background: '#d32f2f' }}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+          platos.map(plato => (
+            <div key={plato.id} style={styles.card}>
+              <div style={styles.cardImageContainer}>
+                {plato.imagen ? (
+                  <img src={plato.imagen} alt={plato.nombre} style={styles.cardImage} />
+                ) : (
+                  <div style={styles.noImage}>Sin imagen</div>
+                )}
+                <div style={styles.cardPrice}>${plato.precio}</div>
+              </div>
+              <div style={styles.cardBody}>
+                <h3 style={styles.cardTitle}>{plato.nombre}</h3>
+                <p style={styles.cardText}>{plato.descripcion}</p>
+                <p style={styles.cardCategory}>{plato.categoria || 'N/A'}</p>
+                <div style={styles.cardActions}>
+                  <button onClick={() => activarEdicion(plato)} style={styles.actionButton}>Editar</button>
+                  <button onClick={() => handleEliminarPlato(plato.id)} style={{ ...styles.actionButton, background: '#d32f2f' }}>Eliminar</button>
                 </div>
               </div>
-            );
-          })
+            </div>
+          ))
         )}
       </div>
     </div>
@@ -499,25 +402,13 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
     marginTop: '1rem',
-    transition: 'background 0.3s ease',
   },
-  errorText: {
-    color: 'red',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: '0.5rem',
-  },
-  successText: {
-    color: 'green',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: '0.5rem',
-  },
+  // En lugar de una tabla, usamos una cuadrícula de tarjetas
   cardGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
     gap: '1.5rem',
-    marginTop: '2rem',
+    marginTop: '2rem'
   },
   card: {
     borderRadius: '8px',

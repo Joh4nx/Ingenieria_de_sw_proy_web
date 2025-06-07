@@ -56,7 +56,7 @@ const NavbarCliente = () => {
             {user ? (
               <div className="user-profile" onClick={toggleDropdown}>
                 <img 
-                  src={user.avatar || '/images/default-avatar.png'} 
+                  src={user.avatar || '/default-avatar.png'} 
                   alt={user.nombre} 
                   className="user-avatar" 
                 />

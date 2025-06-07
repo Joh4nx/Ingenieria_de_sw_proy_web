@@ -1,8 +1,9 @@
+// src/services/firebase.js
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
 
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyB2BNv1Vezda4CK9aH643WAvlvgKVkOUuQ",
   authDomain: "el-gusto-de-don-justo.firebaseapp.com",
   databaseURL: "https://el-gusto-de-don-justo-default-rtdb.firebaseio.com/",
@@ -13,9 +14,8 @@ export const firebaseConfig = {
   measurementId: "G-EW8TZ154JH"
 };
 
-// Se inicializa la app principal con esas credenciales:
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app);
+const auth = getAuth(app); 
 
 export { db, auth };

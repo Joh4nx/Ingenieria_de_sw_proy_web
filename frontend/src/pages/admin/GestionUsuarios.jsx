@@ -1,84 +1,106 @@
 // src/pages/admin/GestionUsuarios.jsx
 import React, { useState, useEffect } from 'react';
-import { ref, onValue, set, remove } from 'firebase/database';
-import { db, firebaseConfig } from '../../services/firebase';
-
-import {
-  initializeApp as initializeSecondaryApp,
-  deleteApp as deleteSecondaryApp
-} from 'firebase/app';
-
-import {
-  getAuth as getAuthSecondary,
-  createUserWithEmailAndPassword,
-  signOut as signOutSecondary
-} from 'firebase/auth';
-
+import { ref, onValue, push, update, remove } from 'firebase/database';
+import { db } from '../../services/firebase';
 import { FiEye, FiEyeOff, FiSearch } from 'react-icons/fi';
 
-// — Genera la contraseña: primera letra del nombre + "." + carnet —
+// Función para generar el email: nombre.apellido@gusto.com
+const generateEmail = (nombre, apellido) => {
+  return `${nombre.trim().toLowerCase()}.${apellido.trim().toLowerCase()}@gusto.com`;
+};
+
+// Función para generar la contraseña: primer_letra_del_nombre.carnet
 const generatePassword = (nombre, carnet) => {
-  if (!nombre || !carnet) return '';
   return `${nombre.trim().toLowerCase()[0]}.${carnet.trim()}`;
 };
 
-// — Accesos iniciales para un admin (todos false) —
-const adminAccesosInicial = {
-  platos: false,
-  reservas: false,
-  mesas: false,
-  pedidos: false,
-  inventario: false,
-  usuarios: false,
-  roles: false,
-  cajero: false,
-  reportes: false,
+// Componente de Notificación Personalizada
+const CustomNotification = ({ message, type, onClose }) => {
+  if (!message) return null;
+
+  const notificationStyle = {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: type === 'success' ? '#4CAF50' : '#f44336', // Verde para éxito, rojo para error
+    color: 'white',
+    padding: '20px',
+    borderRadius: '10px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    zIndex: 1000,
+    textAlign: 'center',
+    maxWidth: '400px',
+    width: '90%',
+    fontSize: '1.1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const closeButtonStyle = {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    border: 'none',
+    color: 'white',
+    padding: '8px 15px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    marginTop: '15px',
+    fontSize: '1rem',
+    fontWeight: 'bold',
+  };
+
+  return (
+    <div style={notificationStyle}>
+      <p>{message}</p>
+      <button onClick={onClose} style={closeButtonStyle}>
+        Entendido
+      </button>
+    </div>
+  );
 };
 
 const GestionUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // — Estados para “Agregar usuario” —
+  // Estados para el formulario de agregar nuevo usuario:
   const [newUserNombre, setNewUserNombre] = useState('');
   const [newUserApellido, setNewUserApellido] = useState('');
   const [newUserCarnet, setNewUserCarnet] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserRole, setNewUserRole] = useState('cliente');
+  const [newUserRole, setNewUserRole] = useState('cliente'); // rol por defecto
 
-  // — Estados para edición —
+  // Estados para la edición de usuarios:
   const [editingId, setEditingId] = useState(null);
   const [editingNombre, setEditingNombre] = useState('');
   const [editingApellido, setEditingApellido] = useState('');
   const [editingCarnet, setEditingCarnet] = useState('');
-  const [editingEmail, setEditingEmail] = useState('');
   const [editingRole, setEditingRole] = useState('');
-  const [showPasswords, setShowPasswords] = useState({});
+  const [showPasswords, setShowPasswords] = useState({}); // Estado para controlar la visibilidad de contraseñas
 
-  // — Búsqueda —
+  // Nuevo estado para el término de búsqueda
   const [searchTerm, setSearchTerm] = useState('');
 
-  // — Banner emergente (modal) —
-  const [banner, setBanner] = useState({ message: '', type: '' });
+  // Estados para la notificación personalizada
+  const [notification, setNotification] = useState({ message: '', type: '' });
 
-  // — Confirmar eliminación via modal —
-  const [confirmDeleteUser, setConfirmDeleteUser] = useState(null);
-
-  // — Muestra el banner en el centro como modal —
-  const showBanner = (message, type = 'success', duration = 5000) => {
-    setBanner({ message, type });
+  // Función para mostrar notificación
+  const showNotification = (message, type = 'success', duration = 5000) => {
+    setNotification({ message, type });
+    // Oculta la notificación después de 'duration' ms
     setTimeout(() => {
-      setBanner({ message: '', type: '' });
+      setNotification({ message: '', type: '' });
     }, duration);
   };
 
-  // — Escucha lista de usuarios en RTDB —
+  // Cargar usuarios de Firebase en tiempo real
   useEffect(() => {
     const usuariosRef = ref(db, 'usuarios');
     const unsubscribe = onValue(usuariosRef, (snapshot) => {
       const data = snapshot.val();
       const usuariosArray = data
-        ? Object.entries(data).map(([id, perfil]) => ({ id, ...perfil }))
+        ? Object.entries(data).map(([id, user]) => ({ id, ...user }))
         : [];
       setUsuarios(usuariosArray);
       setLoading(false);
@@ -86,150 +108,81 @@ const GestionUsuarios = () => {
     return () => unsubscribe();
   }, []);
 
-  // — Agregar nuevo usuario (Auth + RTDB) —
+  // Función para agregar un nuevo usuario
   const handleAddUser = async (e) => {
     e.preventDefault();
-    if (
-      !newUserNombre.trim() ||
-      !newUserApellido.trim() ||
-      !newUserCarnet.trim() ||
-      !newUserEmail.trim()
-    ) {
-      showBanner('Por favor ingrese Nombre, Apellido, Carnet y Email.', 'error');
+    if (!newUserNombre.trim() || !newUserApellido.trim() || !newUserCarnet.trim()) {
+      showNotification('Por favor ingrese Nombre, Apellido y Carnet.', 'error');
       return;
     }
-
-    const password = generatePassword(newUserNombre, newUserCarnet);
-
     try {
-      // 1) Crear un app secundario para no cerrar la sesión actual
-      const secondaryApp = initializeSecondaryApp(firebaseConfig, 'secondary');
-      const secondaryAuth = getAuthSecondary(secondaryApp);
-
-      // 2) Crear la cuenta en Firebase Auth
-      const cred = await createUserWithEmailAndPassword(
-        secondaryAuth,
-        newUserEmail.trim(),
-        password
-      );
-      const uid = cred.user.uid;
-
-      // 3) Preparar perfil para RTDB
-      const perfil = {
+      const usuariosRef = ref(db, 'usuarios');
+      const email = generateEmail(newUserNombre, newUserApellido);
+      const password = generatePassword(newUserNombre, newUserCarnet);
+      const newUser = {
         nombre: newUserNombre.trim(),
         apellido: newUserApellido.trim(),
         carnet: newUserCarnet.trim(),
-        email: newUserEmail.trim(),
-        password, // solo para mostrar
-        role: newUserRole,
-        accesos: newUserRole === 'admin' ? { ...adminAccesosInicial } : {},
+        email,
+        password,
+        role: newUserRole // Rol seleccionado
       };
-
-      // 4) Guardar en RTDB
-      await set(ref(db, `usuarios/${uid}`), perfil);
-
-      // 5) Cerrar la sesión del app secundario y eliminarlo
-      await signOutSecondary(secondaryAuth);
-      await deleteSecondaryApp(secondaryApp);
-
-      // 6) Limpiar formulario
+      await push(usuariosRef, newUser);
+      // Limpiar formulario
       setNewUserNombre('');
       setNewUserApellido('');
       setNewUserCarnet('');
-      setNewUserEmail('');
       setNewUserRole('cliente');
-
-      showBanner(
-        `Usuario creado con éxito.\nEmail: ${newUserEmail.trim()}\nContraseña: ${password}`,
-        'success'
-      );
+      showNotification(`Usuario agregado con éxito.\nEmail: ${email}\nContraseña: ${password}`, 'success');
     } catch (err) {
-      console.error('Error al agregar usuario:', err);
-      let msg = 'Error al crear usuario.';
-      if (err.code === 'auth/email-already-in-use') {
-        msg =
-          'El email ya está en uso. Para volver a crearlo, elimínalo primero desde Firebase Auth.';
-      } else if (err.code === 'auth/invalid-email') {
-        msg = 'El email no es válido.';
-      } else if (err.code === 'auth/weak-password') {
-        msg = 'La contraseña generada es demasiado débil.';
-      }
-      showBanner(msg, 'error');
+      console.error('Error al agregar usuario', err);
+      showNotification('Error al agregar usuario', 'error');
     }
   };
 
-  // — Actualizar usuario (solo en RTDB) —
+  // Función para actualizar los datos básicos y rol de un usuario
   const handleUpdateUser = async (id) => {
-    if (
-      !editingNombre.trim() ||
-      !editingApellido.trim() ||
-      !editingCarnet.trim() ||
-      !editingEmail.trim() ||
-      !editingRole.trim()
-    ) {
-      showBanner('Por favor, ingrese todos los datos correctamente.', 'error');
+    if (!editingNombre.trim() || !editingApellido.trim() || !editingCarnet.trim() || !editingRole.trim()) {
+      showNotification('Por favor, ingrese todos los datos correctamente', 'error');
       return;
     }
-
     try {
+      const email = generateEmail(editingNombre, editingApellido);
       const password = generatePassword(editingNombre, editingCarnet);
-
-      // Solo actualizamos en RTDB
-      await set(ref(db, `usuarios/${id}`), {
+      await update(ref(db, `usuarios/${id}`), {
         nombre: editingNombre.trim(),
         apellido: editingApellido.trim(),
         carnet: editingCarnet.trim(),
-        email: editingEmail.trim(),
+        email,
         password,
-        role: editingRole,
-        accesos:
-          editingRole === 'admin'
-            ? usuarios.find((u) => u.id === id)?.accesos || { ...adminAccesosInicial }
-            : {},
+        role: editingRole
       });
-
-      // Reset campos de edición
       setEditingId(null);
       setEditingNombre('');
       setEditingApellido('');
       setEditingCarnet('');
-      setEditingEmail('');
       setEditingRole('');
-
-      showBanner(
-        `Usuario actualizado.\nEmail: ${editingEmail.trim()}\nContraseña: ${password}`,
-        'success'
-      );
+      showNotification(`Usuario actualizado con éxito.\nNuevo Email: ${email}\nNueva Contraseña: ${password}`, 'success');
     } catch (err) {
-      console.error('Error al actualizar usuario:', err);
-      showBanner('Error al actualizar usuario.', 'error');
+      console.error('Error al actualizar usuario', err);
+      showNotification('Error al actualizar usuario', 'error');
     }
   };
 
-  // — Mostrar ventana de confirmación centrada —
-  const promptDeleteUser = (id, email) => {
-    setConfirmDeleteUser({ id, email });
-    setBanner({ message: '', type: '' }); // ocultar banner previo
-  };
-
-  // — Cancelar eliminación —
-  const cancelDelete = () => {
-    setConfirmDeleteUser(null);
-  };
-
-  // — Eliminar usuario (solo RTDB) —
-  const confirmDelete = async () => {
+  // Función para eliminar un usuario
+  const handleDeleteUser = async (id) => {
+    // Usamos el confirm nativo, ya que es una acción destructiva
+    if (!window.confirm('¿Está seguro de eliminar este usuario?')) return;
     try {
-      await remove(ref(db, `usuarios/${confirmDeleteUser.id}`));
-      setConfirmDeleteUser(null);
-      showBanner('Usuario eliminado correctamente.', 'success');
+      await remove(ref(db, `usuarios/${id}`));
+      showNotification('Usuario eliminado correctamente', 'success');
     } catch (err) {
-      console.error('Error al eliminar usuario:', err);
-      showBanner('Error al eliminar usuario.', 'error');
+      console.error('Error al eliminar usuario', err);
+      showNotification('Error al eliminar usuario', 'error');
     }
   };
 
-  // — Alternar visibilidad de contraseña —
+  // Función para alternar la visibilidad de la contraseña
   const toggleShowPassword = (id) => {
     setShowPasswords((prev) => ({
       ...prev,
@@ -237,63 +190,39 @@ const GestionUsuarios = () => {
     }));
   };
 
-  // — Filtrar usuarios según búsqueda —
+  // Lógica de filtrado con manejo de propiedades undefined
   const filteredUsuarios = usuarios.filter((usuario) => {
-    const term = searchTerm.toLowerCase();
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+    // Usamos el operador OR (|| '') para asegurar que la propiedad nunca sea undefined/null
+    // antes de llamar a .toLowerCase().
     const nombre = usuario.nombre || '';
     const apellido = usuario.apellido || '';
     const email = usuario.email || '';
     const carnet = usuario.carnet || '';
     const role = usuario.role || '';
+
     return (
-      nombre.toLowerCase().includes(term) ||
-      apellido.toLowerCase().includes(term) ||
-      email.toLowerCase().includes(term) ||
-      carnet.toLowerCase().includes(term) ||
-      role.toLowerCase().includes(term)
+      nombre.toLowerCase().includes(lowerCaseSearchTerm) ||
+      apellido.toLowerCase().includes(lowerCaseSearchTerm) ||
+      email.toLowerCase().includes(lowerCaseSearchTerm) ||
+      carnet.toLowerCase().includes(lowerCaseSearchTerm) ||
+      role.toLowerCase().includes(lowerCaseSearchTerm)
     );
   });
 
   return (
     <div style={styles.container}>
-      {/* ——— Banner modal (centrado) ——— */}
-      {banner.message && (
-        <div style={styles.modalOverlay}>
-          <div
-            style={{
-              ...styles.modalBox,
-              ...(banner.type === 'success'
-                ? styles.modalSuccess
-                : styles.modalError),
-            }}
-          >
-            <p style={styles.modalText}>{banner.message}</p>
-          </div>
-        </div>
-      )}
-
-      {/* ——— Confirmación de eliminación (modal) ——— */}
-      {confirmDeleteUser && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.confirmModalBox}>
-            <p style={styles.confirmModalText}>
-              ¿Eliminar al usuario <strong>{confirmDeleteUser.email}</strong>?
-            </p>
-            <div style={styles.confirmModalButtons}>
-              <button onClick={confirmDelete} style={styles.confirmBtnYes}>
-                Sí, eliminar
-              </button>
-              <button onClick={cancelDelete} style={styles.confirmBtnNo}>
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Componente de Notificación */}
+      <CustomNotification
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ message: '', type: '' })}
+      />
 
       <h2>Gestión de Usuarios</h2>
 
-      {/* ——— Formulario para agregar usuario ——— */}
+      {/* Formulario para agregar nuevo usuario */}
       <form onSubmit={handleAddUser} style={styles.form}>
         <h3>Agregar Nuevo Usuario</h3>
         <div style={styles.formGroup}>
@@ -327,16 +256,6 @@ const GestionUsuarios = () => {
           />
         </div>
         <div style={styles.formGroup}>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={newUserEmail}
-            onChange={(e) => setNewUserEmail(e.target.value)}
-            style={styles.input}
-            required
-          />
-        </div>
-        <div style={styles.formGroup}>
           <label>Rol:</label>
           <select
             value={newUserRole}
@@ -352,9 +271,10 @@ const GestionUsuarios = () => {
         </button>
       </form>
 
+      {/* Separador visual */}
       <hr style={styles.separator} />
 
-      {/* ——— Barra de búsqueda ——— */}
+      {/* Barra de Búsqueda */}
       <div style={styles.searchContainer}>
         <FiSearch style={styles.searchIcon} />
         <input
@@ -366,7 +286,6 @@ const GestionUsuarios = () => {
         />
       </div>
 
-      {/* ——— Tabla de usuarios ——— */}
       {loading ? (
         <p style={styles.loadingMessage}>Cargando usuarios...</p>
       ) : (
@@ -390,9 +309,7 @@ const GestionUsuarios = () => {
                     <td style={styles.td}>{usuario.email || '-'}</td>
                     <td style={{ ...styles.td, ...styles.passwordCell }}>
                       <span style={styles.passwordText}>
-                        {showPasswords[usuario.id]
-                          ? usuario.password || '-'
-                          : '••••••••'}
+                        {showPasswords[usuario.id] ? (usuario.password || '-') : '••••••••'}
                       </span>
                       <div
                         onClick={() => toggleShowPassword(usuario.id)}
@@ -442,19 +359,6 @@ const GestionUsuarios = () => {
                     </td>
                     <td style={styles.td}>
                       {editingId === usuario.id ? (
-                        <input
-                          type="email"
-                          value={editingEmail}
-                          onChange={(e) => setEditingEmail(e.target.value)}
-                          placeholder="Email"
-                          style={styles.inlineInput}
-                        />
-                      ) : (
-                        usuario.email || '-'
-                      )}
-                    </td>
-                    <td style={styles.td}>
-                      {editingId === usuario.id ? (
                         <select
                           value={editingRole}
                           onChange={(e) => setEditingRole(e.target.value)}
@@ -482,7 +386,6 @@ const GestionUsuarios = () => {
                               setEditingNombre('');
                               setEditingApellido('');
                               setEditingCarnet('');
-                              setEditingEmail('');
                               setEditingRole('');
                             }}
                             style={styles.cancelButton}
@@ -498,7 +401,6 @@ const GestionUsuarios = () => {
                               setEditingNombre(usuario.nombre || '');
                               setEditingApellido(usuario.apellido || '');
                               setEditingCarnet(usuario.carnet || '');
-                              setEditingEmail(usuario.email || '');
                               setEditingRole(usuario.role || 'cliente');
                             }}
                             style={styles.editButton}
@@ -506,9 +408,7 @@ const GestionUsuarios = () => {
                             Editar
                           </button>
                           <button
-                            onClick={() =>
-                              promptDeleteUser(usuario.id, usuario.email)
-                            }
+                            onClick={() => handleDeleteUser(usuario.id)}
                             style={styles.deleteButton}
                           >
                             Eliminar
@@ -520,10 +420,7 @@ const GestionUsuarios = () => {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="7"
-                    style={{ textAlign: 'center', padding: '1rem', color: '#555' }}
-                  >
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '1rem', color: '#555' }}>
                     No se encontraron usuarios que coincidan con la búsqueda.
                   </td>
                 </tr>
@@ -542,83 +439,7 @@ const styles = {
     maxWidth: '1200px',
     margin: 'auto',
     fontFamily: 'Arial, sans-serif',
-    position: 'relative',
   },
-  // — Overlay fondo semi-transparente —
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 2000,
-  },
-  // — Caja central del banner —
-  modalBox: {
-    maxWidth: '350px',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    textAlign: 'center',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-  },
-  modalSuccess: {
-    backgroundColor: '#4CAF50',
-    color: 'white',
-  },
-  modalError: {
-    backgroundColor: '#f44336',
-    color: 'white',
-  },
-  modalText: {
-    margin: 0,
-    whiteSpace: 'pre-line',
-    fontSize: '1rem',
-    lineHeight: '1.4',
-  },
-
-  // — Confirmación de eliminación (modal) —
-  confirmModalBox: {
-    maxWidth: '350px',
-    padding: '1.5rem',
-    borderRadius: '8px',
-    backgroundColor: '#fff',
-    textAlign: 'center',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-  },
-  confirmModalText: {
-    margin: 0,
-    fontSize: '1rem',
-    lineHeight: '1.4',
-    color: '#333',
-  },
-  confirmModalButtons: {
-    marginTop: '1rem',
-    display: 'flex',
-    justifyContent: 'space-around',
-  },
-  confirmBtnYes: {
-    backgroundColor: '#dc3545',
-    color: '#fff',
-    border: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '600',
-  },
-  confirmBtnNo: {
-    backgroundColor: '#6c757d',
-    color: '#fff',
-    border: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '600',
-  },
-
   form: {
     background: '#f8f9fa',
     padding: '1.5rem',
@@ -650,7 +471,7 @@ const styles = {
     fontWeight: 'bold',
     transition: 'background-color 0.3s ease',
   },
-  separator: {
+  separator: { // Estilo para la línea divisoria
     border: '0',
     height: '1px',
     background: '#ccc',
@@ -721,16 +542,9 @@ const styles = {
     textAlign: 'left',
     width: '180px',
   },
-  tableRow: {
-    verticalAlign: 'middle',
-  },
-  passwordCell: {
-    position: 'relative',
-  },
-  passwordText: {
-    display: 'block',
-    paddingRight: '2rem',
-  },
+  tableRow: { verticalAlign: 'middle' },
+  passwordCell: { position: 'relative' },
+  passwordText: { display: 'block', paddingRight: '2rem' },
   eyeIcon: {
     position: 'absolute',
     top: '50%',
@@ -789,12 +603,12 @@ const styles = {
     border: '1px solid #ccc',
     boxSizing: 'border-box',
   },
-  loadingMessage: {
+  loadingMessage: { // Estilo para el mensaje de carga
     textAlign: 'center',
     padding: '2rem',
     fontSize: '1.2rem',
     color: '#666',
-  },
+  }
 };
 
 export default GestionUsuarios;

@@ -1,17 +1,8 @@
 // src/pages/cliente/PedidoLocal.jsx
 import React, { useState, useEffect } from 'react';
 import { QrReader } from 'react-qr-reader';
-import {
-  ref,
-  onValue,
-  update,
-  query,
-  orderByChild,
-  equalTo,
-  get
-} from 'firebase/database';
-import { db, auth } from '../../services/firebase';
-import { signInAnonymously } from 'firebase/auth';
+import { ref, onValue, update, query, orderByChild, equalTo, get } from 'firebase/database';
+import { db } from '../../services/firebase';
 import Menu from './Menu';
 
 const PedidoLocal = ({ volver }) => {
@@ -21,40 +12,21 @@ const PedidoLocal = ({ volver }) => {
   const [mensajeValidacion, setMensajeValidacion] = useState('');
   const [codigoManual, setCodigoManual] = useState('');
   const [orderTotal, setOrderTotal] = useState(0);
-  const [meseroRespuesta, setMeseroRespuesta] = useState('');
-  const [errorAnonimo, setErrorAnonimo] = useState('');
+  const [meseroRespuesta, setMeseroRespuesta] = useState(''); // Nuevo estado para respuesta del mesero
 
-  // 1) Intentar autenticarse anónimamente
-  useEffect(() => {
-    // Si ya hay un usuario (quizá quedó de otra sesión), no necesitamos volver a firmar
-    if (!auth.currentUser) {
-      signInAnonymously(auth)
-        .catch(err => {
-          console.error('Error al autenticarse anónimamente:', err);
-          // Si cae aquí, es porque la autenticación anónima está deshabilitada en Firebase.
-          setErrorAnonimo(
-            '😞 No se pudo conectar de forma anónima. ' +
-            'Por favor, habilita “Anonymous” en Authentication → Sign-in method de tu Firebase Console.'
-          );
-        });
-    }
-  }, []);
-
-  // 2) Efecto para actualizar tiempo restante y respuesta del mesero
+  // Efecto para actualizar el tiempo restante y la respuesta del mesero
   useEffect(() => {
     if (!mesaValidada || !qrData) return;
-    // Solo seguimos si hay un usuario anónimo ya firmado (auth.currentUser)
-    if (!auth.currentUser) return;
-
     const mesaRef = ref(db, `mesas/${qrData}`);
     const unsubscribe = onValue(mesaRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // Actualizar tiempo restante en minutos
-        const difMs = data.expiracion - Date.now();
-        setTiempoRestante(Math.max(0, Math.floor(difMs / 60000)));
+        // Actualizar tiempo restante
+        const tiempo = Math.max(0, data.expiracion - Date.now());
+        setTiempoRestante(Math.floor(tiempo / 60000));
 
-        // Mostrar respuesta del mesero si la hay (no sea 'true' o 'llamando')
+        // Si existe el campo 'llamando' y su valor ya no es el estado "pendiente" (true o 'llamando'),
+        // se asume que el mesero ya respondió
         if (data.llamando && data.llamando !== true && data.llamando !== 'llamando') {
           setMeseroRespuesta(data.llamando);
         } else {
@@ -62,70 +34,57 @@ const PedidoLocal = ({ volver }) => {
         }
       }
     });
-
     return () => unsubscribe();
   }, [mesaValidada, qrData]);
 
-  // 3) Efecto para calcular el total de la cuenta (solo pedidos “pendiente” de esta mesa)
+  // Efecto para calcular el total de la cuenta usando los pedidos
   useEffect(() => {
     if (!mesaValidada || !qrData) return;
-    if (!auth.currentUser) return;
 
     const pedidosRef = ref(db, 'pedidos');
     const unsubscribe = onValue(pedidosRef, (snapshot) => {
       let total = 0;
       const data = snapshot.val();
+      console.log("Datos completos de pedidos:", data);
       if (data) {
         Object.values(data).forEach((pedido) => {
-          // Sumamos solo si pertenece a esta mesa, está pendiente y tiene items
-          if (
-            pedido.mesa === qrData &&
-            pedido.estado === 'pendiente' &&
-            pedido.items
-          ) {
-            // items puede ser array o un objeto; unificamos a array
-            const itemsArr = Array.isArray(pedido.items)
-              ? pedido.items
-              : Object.values(pedido.items);
-
-            itemsArr.forEach((item) => {
-              const precio = Number(item.precio) || 0;
-              const cantidad = Number(item.cantidad) || 1;
-              total += precio * cantidad;
-            });
+          if (pedido.mesa === qrData && pedido.estado === 'pendiente' && pedido.items) {
+            if (Array.isArray(pedido.items)) {
+              pedido.items.forEach((item) => {
+                const precio = Number(item.precio) || 0;
+                const cantidad = Number(item.cantidad) || 1;
+                total += precio * cantidad;
+              });
+            } else {
+              Object.values(pedido.items).forEach((item) => {
+                const precio = Number(item.precio) || 0;
+                const cantidad = Number(item.cantidad) || 1;
+                total += precio * cantidad;
+              });
+            }
           }
         });
       }
       setOrderTotal(total);
     });
-
     return () => unsubscribe();
   }, [mesaValidada, qrData]);
 
-  // 4) Extender tiempo restante en “minutos”
+  // Función para extender el tiempo restante de la mesa
   const extenderTiempo = async (minutos) => {
-    if (!auth.currentUser) {
-      alert('⚠️ Aún no estás autenticado. Intenta recargar la página.');
-      return;
-    }
     try {
       await update(ref(db, `mesas/${qrData}`), {
-        expiracion: Date.now() + minutos * 60000
+        expiracion: Date.now() + (minutos * 60000)
       });
     } catch (error) {
-      console.error('Error al extender tiempo:', error);
-      alert('Error al extender el tiempo de la mesa.');
+      console.error("Error al extender tiempo:", error);
+      alert("Error al extender el tiempo");
     }
   };
 
-  // 5) Validar el QR (escaneado o código manual)
+  // Función para validar el código QR (escaneado o ingresado manualmente)
   const validarQR = async (codigo) => {
     if (!codigo) return;
-    if (!auth.currentUser) {
-      alert('⚠️ Aún no estás autenticado. Por favor, recarga la página para intentar nuevamente.');
-      return;
-    }
-
     try {
       const mesasRef = ref(db, 'mesas');
       const q = query(mesasRef, orderByChild('qr'), equalTo(codigo));
@@ -133,83 +92,48 @@ const PedidoLocal = ({ volver }) => {
 
       if (!snapshot.exists()) throw new Error('Código QR inválido');
 
-      // Tomamos el primer registro coincidente
-      const [[mesaId, mesaData]] = Object.entries(snapshot.val());
+      const [mesaId, mesaData] = Object.entries(snapshot.val())[0];
+      if (mesaData.estado !== 'libre') throw new Error('Mesa ya ocupada');
+      if (mesaData.expiracion < Date.now()) throw new Error('Código QR expirado');
 
-      if (mesaData.estado !== 'libre') {
-        throw new Error('Mesa ya ocupada');
-      }
-      if (mesaData.expiracion < Date.now()) {
-        throw new Error('Código QR expirado');
-      }
-
-      // Si todo ok, marcamos la mesa como ocupada y guardamos último uso
       await update(ref(db, `mesas/${mesaId}`), {
         estado: 'ocupada',
         ultimoUso: Date.now()
       });
-
       setMesaValidada(true);
       setQrData(mesaId);
-      setMensajeValidacion('✅ Mesa validada. Ahora puedes pedir tu comida.');
-    } catch (err) {
-      console.error('Error validando QR:', err);
-      alert(`Error: ${err.message}`);
+      setMensajeValidacion('Mesa validada. Ahora puede pedir su comida.');
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+      console.error('Error QR:', error);
     }
   };
 
-  // 6) Llamar al mesero
+  // Función para llamar al mesero
   const handleCallWaiter = async () => {
-    if (!auth.currentUser) {
-      alert('⚠️ Aún no estás autenticado. Por favor, recarga la página.');
-      return;
-    }
     try {
       await update(ref(db, `mesas/${qrData}`), { llamando: true });
-      alert('El mesero ha sido llamado.');
+      alert("El mesero ha sido llamado.");
     } catch (error) {
-      console.error('Error al llamar al mesero:', error);
-      alert('Error al llamar al mesero.');
+      console.error("Error al llamar al mesero:", error);
+      alert("Error al llamar al mesero.");
     }
   };
 
   return (
     <div style={styles.container}>
-      {/* Botón para volver a la pantalla anterior */}
-      <button onClick={volver} style={styles.btnVolver}>
-        ← Volver
-      </button>
-
-      {/*
-        Si hubo un problema al intentar autenticarse de forma anónima,
-        mostramos un mensaje claro en pantalla.
-      */}
-      {errorAnonimo && (
-        <div style={styles.errorAuthContainer}>
-          <p style={styles.errorAuthText}>
-            {errorAnonimo}
-          </p>
-        </div>
-      )}
-
+      <button onClick={volver} style={styles.btnVolver}>← Volver</button>
       {!mesaValidada ? (
-        // ── PANTALLA DE LECTURA DE QR (o código manual) ──
         <div style={styles.qrContainer}>
           <h3 style={styles.title}>Escanear código de mesa</h3>
-
           <div style={styles.qrReaderWrapper}>
             <QrReader
               constraints={{ facingMode: 'environment' }}
-              onResult={(result) => {
-                if (result?.text) {
-                  validarQR(result.text);
-                }
-              }}
+              onResult={(result) => result?.text && validarQR(result.text)}
               scanDelay={500}
               videoStyle={{ borderRadius: '15px' }}
             />
           </div>
-
           <div style={styles.manualEntry}>
             <input
               type="text"
@@ -218,51 +142,28 @@ const PedidoLocal = ({ volver }) => {
               onChange={(e) => setCodigoManual(e.target.value)}
               style={styles.inputCodigo}
             />
-            <button
-              onClick={() => validarQR(codigoManual.trim())}
-              style={styles.btnValidarManual}
-            >
+            <button onClick={() => validarQR(codigoManual)} style={styles.btnValidarManual}>
               Validar Código
             </button>
           </div>
-
-          {mensajeValidacion && (
-            <p style={styles.mensajeValidacion}>
-              {mensajeValidacion}
-            </p>
-          )}
         </div>
       ) : (
-        // ── PANTALLA DE PEDIDO (ya con la mesa validada) ──
         <div style={styles.menuContainer}>
           <div style={styles.tiempoHeader}>
-            <span>
-              Mesa {qrData} • Tiempo restante: {tiempoRestante} min
-            </span>
-            <button
-              onClick={() => extenderTiempo(30)}
-              style={styles.extenderButton}
-            >
-              +30 min
-            </button>
+            <span>Mesa {qrData} • Tiempo restante: {tiempoRestante} min</span>
+            <button onClick={() => extenderTiempo(30)} style={styles.extenderButton}>+30 min</button>
           </div>
-
+          
+          {/* Mostrar la respuesta del mesero si existe */}
           {meseroRespuesta && (
-            <p style={styles.meseroRespuesta}>
-              Respuesta del mesero: {meseroRespuesta}
-            </p>
+            <p style={styles.meseroRespuesta}>Respuesta del mesero: {meseroRespuesta}</p>
           )}
-
+          
           <Menu mesaId={qrData} />
-
+          
           <div style={styles.orderSummary}>
-            <p style={styles.orderTotal}>
-              Total: ${orderTotal.toFixed(2)}
-            </p>
-            <button
-              onClick={handleCallWaiter}
-              style={styles.callWaiterButton}
-            >
+            <p style={styles.orderTotal}>Total: ${orderTotal.toFixed(2)}</p>
+            <button onClick={handleCallWaiter} style={styles.callWaiterButton}>
               📢 Llamar al Mesero
             </button>
           </div>
@@ -276,8 +177,7 @@ const styles = {
   container: {
     padding: '2rem',
     maxWidth: '800px',
-    margin: '0 auto',
-    fontFamily: 'Arial, sans-serif'
+    margin: '0 auto'
   },
   btnVolver: {
     backgroundColor: 'transparent',
@@ -285,18 +185,6 @@ const styles = {
     fontSize: '1.25rem',
     cursor: 'pointer',
     marginBottom: '1rem'
-  },
-  // Contenedor si falla la autenticación anónima
-  errorAuthContainer: {
-    backgroundColor: '#fdd',
-    padding: '1rem',
-    borderRadius: '8px',
-    marginBottom: '1rem'
-  },
-  errorAuthText: {
-    color: '#900',
-    fontWeight: 'bold',
-    textAlign: 'center'
   },
   qrContainer: {
     backgroundColor: '#f8f9fa',
@@ -337,15 +225,6 @@ const styles = {
     color: '#333',
     textAlign: 'center'
   },
-  mensajeValidacion: {
-    marginTop: '1rem',
-    color: '#4CAF50',
-    fontWeight: 'bold',
-    textAlign: 'center'
-  },
-  menuContainer: {
-    marginTop: '2rem'
-  },
   tiempoHeader: {
     backgroundColor: '#4CAF50',
     color: 'white',
@@ -364,6 +243,9 @@ const styles = {
     borderRadius: '25px',
     padding: '0.5rem 1rem',
     cursor: 'pointer'
+  },
+  menuContainer: {
+    marginTop: '2rem'
   },
   meseroRespuesta: {
     color: 'blue',

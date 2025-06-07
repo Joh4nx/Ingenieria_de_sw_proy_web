@@ -164,7 +164,7 @@ function HomeCliente() {
                       />
                     </div>
                     <div className="dish-overlay">
-                      <div className="dish-price">Bs {dish.price}</div>
+                      <div className="dish-price">${dish.price}</div>
                       <div className="dish-info">
                         <h3>{dish.name}</h3>
                         <p className="dish-description">{dish.description}</p>

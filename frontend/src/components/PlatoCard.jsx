@@ -15,7 +15,7 @@ function PlatoCard({ plato }) {
         <h3 className="plato-title">{plato.nombre}</h3>
         <p className="plato-description">{plato.descripcion}</p>
         <p className="plato-price">
-          <strong>Precio:</strong> Bs{plato.precio}
+          <strong>Precio:</strong> ${plato.precio}
         </p>
       </div>
       <style>{`

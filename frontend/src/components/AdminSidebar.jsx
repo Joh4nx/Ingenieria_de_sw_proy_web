@@ -14,14 +14,10 @@ const AdminSidebar = () => {
       const userRef = ref(db, `usuarios/${user.id}`);
       const unsubscribe = onValue(userRef, (snapshot) => {
         const data = snapshot.val();
-        // Si los accesos cambiaron en la base de datos, fusionamos con el usuario actual en contexto
         if (data && JSON.stringify(data.accesos) !== JSON.stringify(user.accesos)) {
           clearTimeout(timer);
           timer = setTimeout(() => {
-            const updatedUser = {
-              ...user,
-              ...data,        // mantengo id, email, role, y sobreescribo accesos
-            };
+            const updatedUser = { ...data, id: user.id };
             updateUser(updatedUser);
           }, 500);
         }
@@ -34,7 +30,7 @@ const AdminSidebar = () => {
   }, [user, updateUser]);
 
   const accesos = user?.accesos || {};
-  const hasAccesos = Object.values(accesos).some((v) => v === true);
+  const hasAccesos = Object.values(accesos).some(value => value === true);
 
   return (
     <aside className="sidebar">
@@ -96,17 +92,12 @@ const AdminSidebar = () => {
           </p>
         )}
       </nav>
-
       <style>{`
         .sidebar {
           width: 250px;
           background: #8B0000;
           color: #FFF8F0;
           padding: 1rem;
-          min-height: 100vh;
-          position: fixed;
-          top: 0;
-          left: 0;
         }
         .sidebar-header {
           text-align: center;
@@ -132,13 +123,6 @@ const AdminSidebar = () => {
         }
         .sidebar-nav a:hover {
           color: #D4AF37;
-        }
-        @media (max-width: 768px) {
-          .sidebar {
-            position: relative;
-            width: 100%;
-            padding: 1rem 0;
-          }
         }
       `}</style>
     </aside>
