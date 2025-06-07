@@ -9,6 +9,7 @@ const CajeroDashboard = () => {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pendientes");
+  const [procesando, setProcesando] = useState(null); // ID del pedido que se está procesando
 
   // Cargar en tiempo real todos los pedidos
   useEffect(() => {
@@ -30,17 +31,22 @@ const CajeroDashboard = () => {
 
   // Función para marcar un pedido pendiente como pagado
   const handleMarkPaid = async (pedidoId) => {
+    const confirmar = window.confirm("¿Pago completado?");
+    if (!confirmar) return;
+
+    setProcesando(pedidoId);
     const pedidoRef = ref(db, `pedidos/${pedidoId}`);
     try {
       await update(pedidoRef, { estado: 'pagado' });
-      alert('Pedido marcado como pagado');
     } catch (error) {
       console.error('Error al actualizar pedido:', error);
       alert('Error al actualizar el estado del pedido');
+    } finally {
+      setProcesando(null);
     }
   };
 
-  // Helper: Agrupar pedidos por fecha (utilizando toLocaleDateString)
+  // Helper: Agrupar pedidos por fecha
   const groupOrdersByDate = (orders) => {
     const groups = {};
     orders.forEach((order) => {
@@ -55,11 +61,9 @@ const CajeroDashboard = () => {
     return groups;
   };
 
-  // Filtrar pedidos según estado
   const pendingOrders = pedidos.filter(order => order.estado === 'pendiente');
   const historicalOrders = pedidos.filter(order => order.estado !== 'pendiente');
 
-  // Control de acceso: solo usuarios con rol "cajero" o "admin" tienen acceso
   if (!user || (user.role !== 'cajero' && user.role !== 'admin')) {
     return (
       <div style={styles.container}>
@@ -72,18 +76,17 @@ const CajeroDashboard = () => {
   return (
     <div style={styles.container}>
       <h2>Caja - Gestión de Pagos</h2>
-      
-      {/* Pestañas para seleccionar la vista */}
+
       <div style={styles.tabContainer}>
         <button
           onClick={() => setActiveTab("pendientes")}
-          style={ activeTab === "pendientes" ? { ...styles.tabButton, ...styles.activeTabButton } : styles.tabButton }
+          style={activeTab === "pendientes" ? { ...styles.tabButton, ...styles.activeTabButton } : styles.tabButton}
         >
           Pedidos Pendientes
         </button>
         <button
           onClick={() => setActiveTab("historial")}
-          style={ activeTab === "historial" ? { ...styles.tabButton, ...styles.activeTabButton } : styles.tabButton }
+          style={activeTab === "historial" ? { ...styles.tabButton, ...styles.activeTabButton } : styles.tabButton}
         >
           Historial de Pedidos
         </button>
@@ -92,7 +95,6 @@ const CajeroDashboard = () => {
       {loading ? (
         <p>Cargando pedidos...</p>
       ) : activeTab === "pendientes" ? (
-        // Vista de Pedidos Pendientes
         <table style={styles.table}>
           <thead>
             <tr>
@@ -125,14 +127,17 @@ const CajeroDashboard = () => {
                     {pedido.timestamp ? new Date(pedido.timestamp).toLocaleString() : '-'}
                   </td>
                   <td style={styles.td}>
-                    {pedido.estado === 'pendiente' && (
-                      <button
-                        onClick={() => handleMarkPaid(pedido.id)}
-                        style={styles.actionButton}
-                      >
-                        Marcar como Pagado
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleMarkPaid(pedido.id)}
+                      disabled={procesando === pedido.id}
+                      style={{
+                        ...styles.actionButton,
+                        backgroundColor: procesando === pedido.id ? '#ccc' : '#00796b',
+                        cursor: procesando === pedido.id ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {procesando === pedido.id ? 'Procesando...' : 'Marcar como Pagado'}
+                    </button>
                   </td>
                 </tr>
               );
@@ -140,10 +145,9 @@ const CajeroDashboard = () => {
           </tbody>
         </table>
       ) : (
-        // Vista de Historial de Pedidos, agrupados por día
         <div>
           {Object.entries(groupOrdersByDate(historicalOrders))
-            .sort((a, b) => new Date(b[0]) - new Date(a[0])) // Ordenar de forma descendente
+            .sort((a, b) => new Date(b[0]) - new Date(a[0]))
             .map(([date, orders]) => (
               <div key={date} style={styles.historyGroup}>
                 <h3>{date}</h3>
@@ -232,12 +236,10 @@ const styles = {
     padding: '0.75rem',
   },
   actionButton: {
-    backgroundColor: '#00796b',
     color: '#fff',
     border: 'none',
     padding: '0.5rem 1rem',
     borderRadius: '4px',
-    cursor: 'pointer',
     transition: 'background 0.3s',
   },
   historyGroup: {
